@@ -3,84 +3,66 @@ import './GroceryList.css';
 
 const GroceryList = () => {
   const [items, setItems] = useState([]);
-  const [newItem, setNewItem] = useState({ name: '', imageUrl: '' });
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingItem, setEditingItem] = useState({ name: '', imageUrl: '' });
+  const [item, setItem] = useState({ name: '', imageUrl: '' });
+  const [editIndex, setEditIndex] = useState(null);
 
-  // Add new item to the list
+  const handleChange = (e) => setItem({ ...item, [e.target.name]: e.target.value });
+
   const addItem = () => {
-    if (newItem.name.trim() === '' || newItem.imageUrl.trim() === '') return;
-    setItems([...items, newItem]);
-    setNewItem({ name: '', imageUrl: '' });
+    if (!item.name.trim() || !item.imageUrl.trim()) return;
+    setItems((prev) => [...prev, item]);
+    setItem({ name: '', imageUrl: '' });
   };
 
-  // Delete item from the list
-  const deleteItem = (index) => {
-    const updatedItems = items.filter((_, i) => i !== index);
-    setItems(updatedItems);
-  };
+  const deleteItem = (index) => setItems((prev) => prev.filter((_, i) => i !== index));
 
-  // Start editing mode for an item
-  const startEditing = (index) => {
-    setEditingIndex(index);
-    setEditingItem(items[index]);
-  };
-
-  // Save the edited item
   const saveItem = () => {
-    if (editingItem.name.trim() === '' || editingItem.imageUrl.trim() === '') return;
-    const updatedItems = items.map((item, index) =>
-      index === editingIndex ? editingItem : item
-    );
-    setItems(updatedItems);
-    setEditingIndex(null);
-    setEditingItem({ name: '', imageUrl: '' });
+    if (!item.name.trim() || !item.imageUrl.trim()) return;
+    setItems((prev) => prev.map((itm, i) => (i === editIndex ? item : itm)));
+    setEditIndex(null);
+    setItem({ name: '', imageUrl: '' });
   };
 
   return (
     <div className="container">
-      
       <div className="input-container">
         <input
           type="text"
+          name="name"
           placeholder="Product name"
-          value={newItem.name}
-          onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+          value={item.name}
+          onChange={handleChange}
         />
         <input
           type="text"
+          name="imageUrl"
           placeholder="Image URL"
-          value={newItem.imageUrl}
-          onChange={(e) => setNewItem({ ...newItem, imageUrl: e.target.value })}
+          value={item.imageUrl}
+          onChange={handleChange}
         />
-        <button onClick={addItem}>Add</button>
+        <button onClick={editIndex === null ? addItem : saveItem}>
+          {editIndex === null ? 'Add' : 'Save'}
+        </button>
       </div>
 
       <ul className="grocery-list">
-        {items.map((item, index) => (
+        {items.map((itm, index) => (
           <li key={index} className="grocery-item">
-            {editingIndex === index ? (
+            {editIndex === index ? (
               <>
-                <input
-                  type="text"
-                  value={editingItem.name}
-                  onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
-                />
-                <input
-                  type="text"
-                  value={editingItem.imageUrl}
-                  onChange={(e) => setEditingItem({ ...editingItem, imageUrl: e.target.value })}
-                />
-                <button onClick={saveItem}>Save</button>
+                <input type="text" name="name" value={item.name} onChange={handleChange} />
+                <input type="text" name="imageUrl" value={item.imageUrl} onChange={handleChange} />
               </>
             ) : (
               <>
-                <img src={item.imageUrl} alt={item.name} className="product-image" />
-                <span>{item.name}</span>
-                <button onClick={() => startEditing(index)}>Edit</button>
-                <button onClick={() => deleteItem(index)}>Delete</button>
+                <img src={itm.imageUrl} alt={itm.name} className="product-image" />
+                <span>{itm.name}</span>
               </>
             )}
+            <button onClick={() => (editIndex === index ? saveItem() : setEditIndex(index))}>
+              {editIndex === index ? 'Save' : 'Edit'}
+            </button>
+            <button onClick={() => deleteItem(index)}>Delete</button>
           </li>
         ))}
       </ul>
