@@ -26,7 +26,7 @@
   button {
     padding: 10px;
     font-size: 16px;
-    background-color: #28a745;
+    background-color: #c72e08;
     color: white;
     border: none;
     border-radius: 5px;
@@ -34,7 +34,7 @@
   }
   
   button:hover {
-    background-color: #218838;
+    background-color: #7c8dc7;
   }
   
   .grocery-list {
