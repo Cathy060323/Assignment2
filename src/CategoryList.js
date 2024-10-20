@@ -17,122 +17,69 @@ const CategoryList = () => {
       { name: 'Cheese', price: 1.5, quantity: 0 },
     ],
   });
-  const [cart, setCart] = useState([]); // New state to track the cart
-
-  const baseImageURL = 'https://via.placeholder.com/100?text=';
+  const [cart, setCart] = useState([]);
 
   const products = Object.entries(productState).flatMap(([category, items]) =>
-    items.map((product) => ({
-      ...product,
-      category,
-      image: `${baseImageURL}${product.name}`,
-    }))
+    items.map((item) => ({ ...item, category, image: `https://via.placeholder.com/100?text=${item.name}` }))
   );
 
-  // Filter products by selected category
   const filteredProducts = selectedCategory === 'All'
     ? products
     : products.filter((product) => product.category === selectedCategory);
 
-  // Function to increment quantity
-  const handleIncrement = (category, index) => {
+  const updateQuantity = (category, index, delta) => {
     const updatedCategory = productState[category].map((product, i) =>
-      i === index ? { ...product, quantity: product.quantity + 1 } : product
+      i === index ? { ...product, quantity: product.quantity + delta } : product
     );
-
-    setProductState((prevState) => ({
-      ...prevState,
-      [category]: updatedCategory,
-    }));
+    setProductState((prev) => ({ ...prev, [category]: updatedCategory }));
   };
 
-  // Function to decrement quantity
-  const handleDecrement = (category, index) => {
-    const updatedCategory = productState[category].map((product, i) =>
-      i === index && product.quantity > 0
-        ? { ...product, quantity: product.quantity - 1 }
-        : product
-    );
-
-    setProductState((prevState) => ({
-      ...prevState,
-      [category]: updatedCategory,
-    }));
-  };
-
-  // Function to add product to cart
   const handleAddToCart = (product) => {
     if (product.quantity > 0) {
-      const existingProductIndex = cart.findIndex(
-        (cartItem) => cartItem.name === product.name
-      );
-
-      if (existingProductIndex >= 0) {
-        // If the product is already in the cart, update its quantity
-        const updatedCart = cart.map((cartItem, index) =>
-          index === existingProductIndex
-            ? { ...cartItem, quantity: cartItem.quantity + product.quantity }
-            : cartItem
-        );
-        setCart(updatedCart);
-      } else {
-        // If the product is not in the cart, add it
-        setCart([...cart, { ...product }]);
-      }
+      setCart((prevCart) => {
+        const existingProduct = prevCart.find((item) => item.name === product.name);
+        return existingProduct
+          ? prevCart.map((item) =>
+              item.name === product.name ? { ...item, quantity: item.quantity + product.quantity } : item
+            )
+          : [...prevCart, { ...product }];
+      });
     }
   };
 
   return (
     <div className="container">
       <h1>Categories</h1>
-
-      {/* Category Selection */}
       <div className="category-buttons">
-        {['All', 'Fruits', 'Vegetables', 'Dairy'].map((category, index) => (
-          <button
-            key={index}
-            className={selectedCategory === category ? 'active' : ''}
-            onClick={() => setSelectedCategory(category)}
-          >
+        {['All', 'Fruits', 'Vegetables', 'Dairy'].map((category, i) => (
+          <button key={i} className={selectedCategory === category ? 'active' : ''} onClick={() => setSelectedCategory(category)}>
             {category}
           </button>
         ))}
       </div>
 
-      {/* Product List */}
       <div className="product-list">
         {filteredProducts.map((product, index) => (
           <div key={index} className="product-item">
             <img src={product.image} alt={product.name} className="product-image" />
-            <p>{product.name}</p>
-            <p>Price: ${product.price.toFixed(2)}</p>
-
-            {/* Quantity and Controls */}
+            <p>{product.name} - ${product.price.toFixed(2)}</p>
             <div className="quantity-controls">
-              <button onClick={() => handleDecrement(product.category, index)}>-</button>
+              <button onClick={() => updateQuantity(product.category, index, -1)}>-</button>
               <span>{product.quantity}</span>
-              <button onClick={() => handleIncrement(product.category, index)}>+</button>
+              <button onClick={() => updateQuantity(product.category, index, 1)}>+</button>
             </div>
-
-            {/* Add to Cart Button */}
-            <button className="add-to-cart" onClick={() => handleAddToCart(product)}>
-              Add to Cart
-            </button>
+            <button className="add-to-cart" onClick={() => handleAddToCart(product)}>Add to Cart</button>
           </div>
         ))}
       </div>
 
-      {/* Cart Section */}
       <div className="cart">
         <h2>LISTS</h2>
-        {cart.length === 0 ? (
-          <p>Your cart is empty</p>
-        ) : (
+        {cart.length === 0 ? <p>Your cart is empty</p> : (
           <ul>
-            {cart.map((cartItem, index) => (
-              <li key={index}>
-                {cartItem.name} - Quantity: {cartItem.quantity} - Total: $
-                {(cartItem.price * cartItem.quantity).toFixed(2)}
+            {cart.map((item, i) => (
+              <li key={i}>
+                {item.name} - Quantity: {item.quantity} - Total: ${(item.price * item.quantity).toFixed(2)}
               </li>
             ))}
           </ul>
